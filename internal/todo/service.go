@@ -33,3 +33,29 @@ func (s *Service) UpdateTodo(ctx context.Context, todo *domain.Todo) error {
 func (s *Service) DeleteTodo(ctx context.Context, id int) error {
 	return s.repo.DeleteTodo(ctx, id)
 }
+
+func (s *Service) PatchTodo(ctx context.Context, patchTodo PatchTodoInput) (*domain.Todo, error) {
+
+	if patchTodo.Name == nil && patchTodo.Description == nil && patchTodo.Completed == nil {
+		return nil, domain.ErrValidation
+	}
+	todo, err := s.GetTodoByID(ctx, patchTodo.ID)
+	if err != nil {
+		return nil, err
+	}
+	if patchTodo.Name != nil {
+		todo.Name = *patchTodo.Name
+	}
+	if patchTodo.Description != nil {
+		todo.Description = *patchTodo.Description
+	}
+	if patchTodo.Completed != nil {
+		todo.Completed = *patchTodo.Completed
+	}
+
+	if err := s.repo.UpdateTodo(ctx, todo); err != nil {
+		return nil, err
+	}
+	return todo, nil
+
+}
