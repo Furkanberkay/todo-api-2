@@ -24,12 +24,25 @@ func (s *Service) GetTodoByID(ctx context.Context, id int) (*domain.Todo, error)
 	return s.repo.GetTodoByID(ctx, id)
 }
 
-func (s *Service) CreateTodo(ctx context.Context, todo *domain.Todo) error {
-	return s.repo.CreateTodo(ctx, todo)
+func (s *Service) CreateTodo(ctx context.Context, todoInput *CreateTodoInput) (*domain.Todo, error) {
+
+	todo := &domain.Todo{
+		Name:        todoInput.Name,
+		Description: todoInput.Description,
+		Completed:   false,
+	}
+
+	if err := s.repo.CreateTodo(ctx, todo); err != nil {
+		return nil, err
+	}
+
+	return todo, nil
 }
+
 func (s *Service) UpdateTodo(ctx context.Context, todo *domain.Todo) error {
 	return s.repo.UpdateTodo(ctx, todo)
 }
+
 func (s *Service) DeleteTodo(ctx context.Context, id int) error {
 	return s.repo.DeleteTodo(ctx, id)
 }
