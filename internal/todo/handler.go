@@ -1,7 +1,6 @@
 package todo
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -11,10 +10,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
-
-type ResponseErr struct {
-	Message string `json:"message"`
-}
 
 type Handler struct {
 	service   *Service
@@ -31,7 +26,7 @@ func (h *Handler) GetTodos(e echo.Context) error {
 
 	todos, err := h.service.GetTodos(e.Request().Context())
 	if err != nil {
-		return e.JSON(http.StatusInternalServerError, ResponseErr{Message: domain.ErrInternal.Error()})
+		return httpx.HandleServiceError(e, err)
 	}
 
 	for _, todo := range todos {
@@ -50,19 +45,12 @@ func (h *Handler) GetTodoByID(e echo.Context) error {
 	idStr := e.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return e.JSON(http.StatusBadRequest, ResponseErr{Message: "id must be a number"})
+		return httpx.IdMapError(e, err)
 	}
 	todo, errService := h.service.GetTodoByID(e.Request().Context(), id)
 
 	if errService != nil {
-		if errors.Is(errService, domain.ErrTodoNotFound) {
-			return e.JSON(http.StatusNotFound, ResponseErr{
-				Message: domain.ErrTodoNotFound.Error(),
-			})
-		}
-		return e.JSON(http.StatusInternalServerError, ResponseErr{
-			Message: domain.ErrInternal.Error(),
-		})
+		return httpx.HandleServiceError(e, errService)
 	}
 
 	todoResp := dto.TodoDetailResponse{
@@ -80,9 +68,7 @@ func (h *Handler) CreateTodo(e echo.Context) error {
 	createTodoDTO := dto.TodoPostRequest{}
 
 	if err := e.Bind(&createTodoDTO); err != nil {
-		return e.JSON(http.StatusBadRequest, ResponseErr{
-			Message: "invalid request body",
-		})
+		return httpx.InvalidBodyErr(e, err)
 	}
 
 	if err := h.validator.Struct(&createTodoDTO); err != nil {
@@ -96,9 +82,7 @@ func (h *Handler) CreateTodo(e echo.Context) error {
 
 	createdTodo, err := h.service.CreateTodo(e.Request().Context(), &todo)
 	if err != nil {
-		return e.JSON(http.StatusInternalServerError, ResponseErr{
-			Message: domain.ErrInternal.Error(),
-		})
+		return httpx.HandleServiceError(e, err)
 	}
 	todoResp := dto.TodoDetailResponse{
 		ID:          createdTodo.ID,
@@ -116,19 +100,10 @@ func (h *Handler) DeleteTodo(e echo.Context) error {
 	idStr := e.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return e.JSON(http.StatusBadRequest, ResponseErr{
-			Message: "id must be a number",
-		})
+		return httpx.IdMapError(e, err)
 	}
 	if err := h.service.DeleteTodo(e.Request().Context(), id); err != nil {
-		if errors.Is(err, domain.ErrTodoNotFound) {
-			return e.JSON(http.StatusNotFound, ResponseErr{
-				Message: domain.ErrTodoNotFound.Error(),
-			})
-		}
-		return e.JSON(http.StatusInternalServerError, ResponseErr{
-			Message: domain.ErrInternal.Error(),
-		})
+		return httpx.HandleServiceError(e, err)
 	}
 	return e.NoContent(http.StatusNoContent)
 }
@@ -139,15 +114,11 @@ func (h *Handler) UpdateTodo(e echo.Context) error {
 	idStr := e.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return e.JSON(http.StatusBadRequest, ResponseErr{
-			Message: "id must be a number",
-		})
+		return httpx.IdMapError(e, err)
 	}
 
 	if err := e.Bind(&todoPutRequest); err != nil {
-		return e.JSON(http.StatusBadRequest, ResponseErr{
-			Message: "invalid request body",
-		})
+		return httpx.InvalidBodyErr(e, err)
 	}
 
 	if err := h.validator.Struct(&todoPutRequest); err != nil {
@@ -163,14 +134,8 @@ func (h *Handler) UpdateTodo(e echo.Context) error {
 	todo.Completed = todoPutRequest.Completed
 
 	if err := h.service.UpdateTodo(e.Request().Context(), &todo); err != nil {
-		if errors.Is(err, domain.ErrTodoNotFound) {
-			return e.JSON(http.StatusNotFound, ResponseErr{
-				Message: domain.ErrTodoNotFound.Error(),
-			})
-		}
-		return e.JSON(http.StatusInternalServerError, ResponseErr{
-			Message: domain.ErrInternal.Error(),
-		})
+		return httpx.HandleServiceError(e, err)
+
 	}
 
 	todoResponse := dto.TodoDetailResponse{
@@ -182,5 +147,55 @@ func (h *Handler) UpdateTodo(e echo.Context) error {
 	}
 
 	return e.JSON(http.StatusOK, todoResponse)
+
+}
+
+func (h *Handler) PatchTodo(e echo.Context) error {
+	idStr := e.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return httpx.IdMapError(e, err)
+	}
+
+	patchTodo := dto.TodoPatchRequest{}
+
+	if bindErr := e.Bind(&patchTodo); bindErr != nil {
+		return httpx.InvalidBodyErr(e, bindErr)
+	}
+
+	if err := h.validator.Struct(&patchTodo); err != nil {
+		validateErr := httpx.ParseValidationErrors(err)
+		return e.JSON(http.StatusBadRequest, validateErr)
+	}
+
+	todo, domainTodoErr := h.service.GetTodoByID(e.Request().Context(), id)
+
+	if domainTodoErr != nil {
+		return httpx.HandleServiceError(e, domainTodoErr)
+	}
+
+	if patchTodo.Name != nil {
+		todo.Name = *patchTodo.Name
+	}
+	if patchTodo.Description != nil {
+		todo.Description = *patchTodo.Description
+	}
+	if patchTodo.Completed != nil {
+		todo.Completed = *patchTodo.Completed
+	}
+
+	if err := h.service.UpdateTodo(e.Request().Context(), todo); err != nil {
+		return httpx.HandleServiceError(e, err)
+	}
+
+	todoDetailResp := dto.TodoDetailResponse{
+		ID:          todo.ID,
+		Name:        todo.Name,
+		Description: todo.Description,
+		Completed:   todo.Completed,
+		UpdatedAt:   todo.UpdatedAt,
+	}
+
+	return e.JSON(http.StatusOK, todoDetailResp)
 
 }

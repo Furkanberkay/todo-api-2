@@ -10,3 +10,9 @@ type TodoPutRequest struct {
 	Description string `json:"description" validate:"required,max=200"`
 	Completed   bool   `json:"completed" validate:"required"`
 }
+
+type TodoPatchRequest struct {
+	Name        *string `json:"name" validate:"omitempty,min=3"`
+	Description *string `json:"description" validate:"omitempty,min=3"`
+	Completed   *bool   `json:"completed" validate:"omitempty"`
+}
