@@ -16,8 +16,12 @@ func NewService(repo domain.TodoRepository) *Service {
 	}
 }
 
-func (s *Service) GetTodos(ctx context.Context) ([]domain.Todo, error) {
-	return s.repo.GetTodos(ctx)
+func (s *Service) GetTodos(ctx context.Context, page int, limit int) ([]domain.Todo, int, error) {
+	todos, totalCount, err := s.repo.GetTodos(ctx, page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return todos, totalCount, nil
 }
 
 func (s *Service) GetTodoByID(ctx context.Context, id int) (*domain.Todo, error) {

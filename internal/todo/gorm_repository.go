@@ -18,16 +18,23 @@ func NewRepository(db *gorm.DB, log *log.Logger) domain.TodoRepository {
 	return &Repository{Db: db, log: log}
 }
 
-func (r *Repository) GetTodos(ctx context.Context) ([]domain.Todo, error) {
+func (r *Repository) GetTodos(ctx context.Context, page int, limit int) ([]domain.Todo, int, error) {
 	var todos []domain.Todo
-	result := r.Db.WithContext(ctx).Find(&todos)
+	var totalCount int64
 
-	if result.Error != nil {
-		r.log.Printf("[todo/Repository: GetTodos] DB Error: %v", result.Error.Error())
-		return nil, domain.ErrInternal
+	offset := (page - 1) * limit
+
+	if err := r.Db.Model(&domain.Todo{}).Count(&totalCount).Error; err != nil {
+		return nil, 0, domain.ErrInternal
 	}
 
-	return todos, nil
+	result := r.Db.Offset(offset).Limit(limit).Find(&todos)
+
+	if result.Error != nil {
+		return nil, 0, domain.ErrInternal
+	}
+
+	return todos, int(totalCount), nil
 }
 
 func (r *Repository) GetTodoByID(ctx context.Context, id int) (*domain.Todo, error) {

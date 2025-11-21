@@ -10,6 +10,7 @@ import (
 	"github.com/Furkanberkay/todo-api-2/internal/todo"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -25,6 +26,7 @@ func main() {
 	handler := todo.NewHandler(service, v)
 
 	e := echo.New()
+	e.Use(middleware.Recover())
 
 	handler.RegisterRoutes(e)
 

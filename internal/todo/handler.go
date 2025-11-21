@@ -21,10 +21,23 @@ func NewHandler(service *Service, validator *validator.Validate) *Handler {
 }
 
 func (h *Handler) GetTodos(e echo.Context) error {
+	query := dto.PaginationQuery{
+		Page:  1,
+		Limit: 10,
+	}
+
+	if err := e.Bind(&query); err != nil {
+		return httpx.InvalidBodyErr(e, err)
+	}
+
+	if err := h.validator.Struct(&query); err != nil {
+		parseValidatorErr := httpx.ParseValidationErrors(err)
+		return e.JSON(http.StatusBadRequest, parseValidatorErr)
+	}
 
 	var todoList []dto.TodoListItemResponse
 
-	todos, err := h.service.GetTodos(e.Request().Context())
+	todos, totalCount, err := h.service.GetTodos(e.Request().Context(), query.Page, query.Limit)
 	if err != nil {
 		return httpx.HandleServiceError(e, err)
 	}
@@ -38,7 +51,18 @@ func (h *Handler) GetTodos(e echo.Context) error {
 		})
 	}
 
-	return e.JSON(http.StatusOK, todoList)
+	paginationData := dto.PaginationMeta{
+		Page:  query.Page,
+		Limit: query.Limit,
+		Total: totalCount,
+	}
+
+	todoResp := dto.TodoPaginatedResponse{
+		Data: todoList,
+		Meta: paginationData,
+	}
+
+	return e.JSON(http.StatusOK, todoResp)
 }
 
 func (h *Handler) GetTodoByID(e echo.Context) error {

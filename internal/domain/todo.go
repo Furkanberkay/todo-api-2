@@ -19,7 +19,7 @@ func (Todo) TableName() string {
 }
 
 type TodoRepository interface {
-	GetTodos(ctx context.Context) ([]Todo, error)
+	GetTodos(ctx context.Context, page int, limit int) ([]Todo, int, error)
 	GetTodoByID(ctx context.Context, id int) (*Todo, error)
 	CreateTodo(ctx context.Context, todo *Todo) error
 	UpdateTodo(ctx context.Context, todo *Todo) error

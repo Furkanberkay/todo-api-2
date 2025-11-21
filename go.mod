@@ -30,6 +30,7 @@ require (
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
