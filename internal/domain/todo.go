@@ -12,6 +12,7 @@ type Todo struct {
 	Name        string `gorm:"not null,size:200"`
 	Description string `gorm:"not null,size:500"`
 	Completed   bool   `gorm:"default:false"`
+	UserID      uint   `gorm:"not null"`
 }
 
 func (Todo) TableName() string {

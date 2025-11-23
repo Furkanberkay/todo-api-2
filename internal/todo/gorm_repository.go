@@ -24,11 +24,11 @@ func (r *Repository) GetTodos(ctx context.Context, page int, limit int) ([]domai
 
 	offset := (page - 1) * limit
 
-	if err := r.Db.Model(&domain.Todo{}).Count(&totalCount).Error; err != nil {
+	if err := r.Db.WithContext(ctx).Model(&domain.Todo{}).Count(&totalCount).Error; err != nil {
 		return nil, 0, domain.ErrInternal
 	}
 
-	result := r.Db.Offset(offset).Limit(limit).Find(&todos)
+	result := r.Db.WithContext(ctx).Offset(offset).Limit(limit).Find(&todos)
 
 	if result.Error != nil {
 		return nil, 0, domain.ErrInternal
