@@ -30,3 +30,5 @@ type TodoRepository interface {
 var ErrTodoNotFound = errors.New("todo not found")
 var ErrInternal = errors.New("server internal error")
 var ErrValidation = errors.New("validation Error")
+
+var ErrUserNotFound = errors.New("user not found")
