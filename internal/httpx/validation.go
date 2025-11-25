@@ -1,6 +1,8 @@
 package httpx
 
 import (
+	"errors"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -18,7 +20,8 @@ type ValidationErrorResponse struct {
 func ParseValidationErrors(err error) ValidationErrorResponse {
 	var validationErrors []ValidationErrorDetail
 
-	if errs, ok := err.(validator.ValidationErrors); ok {
+	var errs validator.ValidationErrors
+	if errors.As(err, &errs) {
 		for _, e := range errs {
 			validationErrors = append(validationErrors, ValidationErrorDetail{
 				Field: e.Field(),

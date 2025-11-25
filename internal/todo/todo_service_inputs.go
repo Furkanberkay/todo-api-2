@@ -1,5 +1,7 @@
 package todo
 
+import "github.com/Furkanberkay/todo-api-2/internal/domain"
+
 type CreateTodoInput struct {
 	Name        string
 	Description string
@@ -10,4 +12,12 @@ type PatchTodoInput struct {
 	Name        *string
 	Description *string
 	Completed   *bool
+}
+
+func (s *CreateTodoInput) ToModel() *domain.Todo {
+	return &domain.Todo{
+		Name:        s.Name,
+		Description: s.Description,
+		Completed:   false,
+	}
 }

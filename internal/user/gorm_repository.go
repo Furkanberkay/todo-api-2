@@ -50,7 +50,7 @@ func (r *GormUserRepository) GetUserByEmail(ctx context.Context, email string) (
 
 }
 
-func (r *GormUserRepository) DeleteUser(ctx context.Context, id int) error {
+func (r *GormUserRepository) DeleteUser(ctx context.Context, id uint) error {
 	result := r.Db.WithContext(ctx).Where("id = ?", id).Delete(&domain.User{})
 
 	if result.Error != nil {

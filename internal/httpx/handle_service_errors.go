@@ -14,18 +14,20 @@ type ResponseErr struct {
 
 func HandleServiceError(c echo.Context, err error) error {
 	if errors.Is(err, domain.ErrTodoNotFound) {
+		c.Logger().Warnf("Service Warning (Not Found): %v", err)
 		return c.JSON(http.StatusNotFound, ResponseErr{Message: domain.ErrTodoNotFound.Error()})
 	}
 
+	c.Logger().Errorf("Service Internal Error: %v", err)
 	return c.JSON(http.StatusInternalServerError, ResponseErr{Message: domain.ErrInternal.Error()})
 }
 
 func IdMapError(c echo.Context, err error) error {
-
+	c.Logger().Errorf("ID Mapping Error: %v", err)
 	return c.JSON(http.StatusBadRequest, ResponseErr{Message: "id must be a number"})
 }
 
 func InvalidBodyErr(c echo.Context, err error) error {
-
+	c.Logger().Errorf("Body Parse Error: %v", err)
 	return c.JSON(http.StatusBadRequest, ResponseErr{Message: "invalid request body"})
 }

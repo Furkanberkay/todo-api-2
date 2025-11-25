@@ -19,6 +19,6 @@ type User struct {
 type UserRepository interface {
 	RegisterUser(c context.Context, user *User) error
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
-	DeleteUser(ctx context.Context, id int) error
+	DeleteUser(ctx context.Context, id uint) error
 	GetUserByID(ctx context.Context, id uint) (*User, error)
 }
