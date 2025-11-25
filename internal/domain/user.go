@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -22,3 +23,5 @@ type UserRepository interface {
 	DeleteUser(ctx context.Context, id uint) error
 	GetUserByID(ctx context.Context, id uint) (*User, error)
 }
+
+var ErrUserAlreadyExists = errors.New("username or email already exists")

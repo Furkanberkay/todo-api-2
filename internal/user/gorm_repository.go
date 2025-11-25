@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
 
 	"github.com/Furkanberkay/todo-api-2/internal/domain"
 	"gorm.io/gorm"
@@ -25,6 +26,13 @@ func (r *GormUserRepository) RegisterUser(ctx context.Context, user *domain.User
 	result := r.Db.WithContext(ctx).Create(&user)
 
 	if result.Error != nil {
+		errStr := result.Error.Error()
+
+		if strings.Contains(errStr, "UNIQUE constraint failed") || strings.Contains(errStr, "Duplicate entry") {
+			r.log.Printf("[user/Repo] Duplicate user: %v", result.Error)
+			return domain.ErrUserAlreadyExists
+		}
+
 		r.log.Printf("[user/Repository: Create] DB Error: %v", result.Error.Error())
 		return domain.ErrInternal
 	}

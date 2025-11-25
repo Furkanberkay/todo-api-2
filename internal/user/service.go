@@ -27,15 +27,15 @@ func (s *Service) RegisterUser(ctx context.Context, userInput *CreateUserInput) 
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userInput.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return domain.ErrInternal
+		return nil, domain.ErrInternal
 	}
 	hashedPasswordString := string(hashedPassword)
 
 	user := userInput.ToModel(hashedPasswordString)
 
-	err := s.repo.RegisterUser(ctx, user)
+	registerErr := s.repo.RegisterUser(ctx, user)
 
-	return user, err
+	return user, registerErr
 
 }
 

@@ -14,5 +14,5 @@ func main() {
 
 	database.AutoMigrate(db)
 
-	log.Println("[migrate] done ✅")
+	log.Println("[migrate] done ")
 }

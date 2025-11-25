@@ -33,26 +33,14 @@ func (h *Handler) RegisterUser(e echo.Context) error {
 		return e.JSON(http.StatusBadRequest, validateErr)
 	}
 
-	registerInput := CreateUserInput{
-		Name:     registerDto.Name,
-		Email:    registerDto.Email,
-		Username: registerDto.Username,
-		Surname:  registerDto.Surname,
-		Password: registerDto.Password,
-	}
+	registerInput := MapRegisterRequestToInput(&registerDto)
 
-	user, err := h.service.RegisterUser(e.Request().Context(), &registerInput)
+	user, err := h.service.RegisterUser(e.Request().Context(), registerInput)
 	if err != nil {
 		return httpx.HandleServiceError(e, err)
 	}
 
-	userResponse := dto.RegisterResponse{
-		Username: user.Username,
-		Surname:  user.Surname,
-		Email:    user.Email,
-		ID:       user.ID,
-		Name:     user.Name,
-	}
+	userResponse := MapUserToResponse(user)
 
 	return e.JSON(http.StatusCreated, userResponse)
 

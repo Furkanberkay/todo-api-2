@@ -18,6 +18,10 @@ func HandleServiceError(c echo.Context, err error) error {
 		return c.JSON(http.StatusNotFound, ResponseErr{Message: domain.ErrTodoNotFound.Error()})
 	}
 
+	if errors.Is(err, domain.ErrUserAlreadyExists) {
+		return c.JSON(http.StatusConflict, ResponseErr{Message: domain.ErrUserAlreadyExists.Error()})
+	}
+
 	c.Logger().Errorf("Service Internal Error: %v", err)
 	return c.JSON(http.StatusInternalServerError, ResponseErr{Message: domain.ErrInternal.Error()})
 }
