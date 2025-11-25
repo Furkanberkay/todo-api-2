@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) RegisterRoutes(e *echo.Echo) {
+func (h *Handler) TodoRoutes(e *echo.Echo) {
 	e.GET("/todos", h.GetTodos)
 	e.GET("/todos/:id", h.GetTodoByID)
 	e.POST("/todos", h.CreateTodo)

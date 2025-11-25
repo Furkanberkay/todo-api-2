@@ -12,6 +12,7 @@ type Todo struct {
 	Name        string `gorm:"not null,size:200"`
 	Description string `gorm:"not null,size:500"`
 	Completed   bool   `gorm:"default:false"`
+	UserID      uint   `gorm:"not null"`
 }
 
 func (Todo) TableName() string {
@@ -29,3 +30,5 @@ type TodoRepository interface {
 var ErrTodoNotFound = errors.New("todo not found")
 var ErrInternal = errors.New("server internal error")
 var ErrValidation = errors.New("validation Error")
+
+var ErrUserNotFound = errors.New("user not found")

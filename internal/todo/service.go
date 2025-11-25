@@ -30,11 +30,7 @@ func (s *Service) GetTodoByID(ctx context.Context, id int) (*domain.Todo, error)
 
 func (s *Service) CreateTodo(ctx context.Context, todoInput *CreateTodoInput) (*domain.Todo, error) {
 
-	todo := &domain.Todo{
-		Name:        todoInput.Name,
-		Description: todoInput.Description,
-		Completed:   false,
-	}
+	todo := todoInput.ToModel()
 
 	if err := s.repo.CreateTodo(ctx, todo); err != nil {
 		return nil, err
