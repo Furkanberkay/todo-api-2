@@ -25,3 +25,4 @@ type UserRepository interface {
 }
 
 var ErrUserAlreadyExists = errors.New("username or email already exists")
+var ErrIncorrectEmailOrPassword = errors.New("email or password is incorrect")

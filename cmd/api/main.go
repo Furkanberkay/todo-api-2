@@ -36,8 +36,11 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 
-	todoHandler.TodoRoutes(e)
-	userHandler.UserRoutes(e)
+	api := e.Group("/api/v1")
+	public := e.Group("")
+	todoHandler.TodoProtectedRoutes(api)
+	userHandler.UserProtectedRoutes(api)
+	userHandler.UserPublicRoutes(public)
 
 	log.Printf("[api] starting http server on %s", cfg.HTTPAddr)
 

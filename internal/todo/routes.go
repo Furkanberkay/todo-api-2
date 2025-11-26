@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) TodoRoutes(e *echo.Echo) {
+func (h *Handler) TodoProtectedRoutes(e *echo.Group) {
 	e.GET("/todos", h.GetTodos)
 	e.GET("/todos/:id", h.GetTodoByID)
 	e.POST("/todos", h.CreateTodo)
