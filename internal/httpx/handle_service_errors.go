@@ -23,7 +23,7 @@ func HandleServiceError(c echo.Context, err error) error {
 	}
 
 	if errors.Is(err, domain.ErrIncorrectEmailOrPassword) {
-		return c.JSON(http.StatusConflict, ResponseErr{Message: domain.ErrUserAlreadyExists.Error()})
+		return c.JSON(http.StatusUnauthorized, ResponseErr{Message: domain.ErrIncorrectEmailOrPassword.Error()})
 	}
 
 	c.Logger().Errorf("Service Internal Error: %v", err)
