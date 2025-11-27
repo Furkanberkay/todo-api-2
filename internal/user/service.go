@@ -54,6 +54,7 @@ func (s *Service) LoginUser(ctx context.Context, loginInput *LoginInput) (string
 	user, err := s.repo.GetUserByEmail(ctx, loginInput.Email)
 
 	if err != nil {
+
 		return "", domain.ErrIncorrectEmailOrPassword
 	}
 
@@ -72,8 +73,8 @@ func (s *Service) LoginUser(ctx context.Context, loginInput *LoginInput) (string
 		return "", domain.ErrInternal
 	}
 
-	tokenString, err := token.SignedString([]byte(secretKey))
-	if err != nil {
+	tokenString, signedErr := token.SignedString([]byte(secretKey))
+	if signedErr != nil {
 		return "", domain.ErrInternal
 	}
 	return tokenString, nil

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -19,13 +20,14 @@ func main() {
 
 	cfg := config.Load()
 
-	logger := log.New(os.Stdout, "[todo] ", log.LstdFlags|log.Lshortfile)
+	handler := slog.NewJSONHandler(os.Stdout, nil)
+	slogLogger := slog.New(handler)
 
 	db := database.NewSQLite(cfg.SQLitePath)
 	v := validator.New()
 
-	todoRepo := todo.NewRepository(db, logger)
-	userRepo := user.NewUserGormRepository(db, logger)
+	todoRepo := todo.NewRepository(db, slogLogger)
+	userRepo := user.NewUserGormRepository(db, slogLogger)
 
 	todoService := todo.NewService(todoRepo)
 	userService := user.NewUserService(userRepo, cfg)
