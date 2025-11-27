@@ -6,7 +6,7 @@ import (
 
 	"github.com/Furkanberkay/todo-api-2/config"
 	"github.com/Furkanberkay/todo-api-2/internal/domain"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 

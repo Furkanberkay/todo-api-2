@@ -10,8 +10,9 @@ import (
 	"github.com/Furkanberkay/todo-api-2/internal/todo"
 	"github.com/Furkanberkay/todo-api-2/internal/user"
 	"github.com/go-playground/validator/v10"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	echomw "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -33,10 +34,15 @@ func main() {
 	todoHandler := todo.NewHandler(todoService, v)
 
 	e := echo.New()
-	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
+	e.Use(echomw.Recover())
+	e.Use(echomw.Logger())
 
-	api := e.Group("/api/v1")
+	jwtConfig := echojwt.Config{
+		SigningKey: []byte(cfg.SecretKey),
+		ContextKey: "user",
+	}
+
+	api := e.Group("/api/v1", echojwt.WithConfig(jwtConfig))
 	public := e.Group("")
 	todoHandler.TodoProtectedRoutes(api)
 	userHandler.UserProtectedRoutes(api)
