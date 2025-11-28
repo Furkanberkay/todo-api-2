@@ -10,5 +10,6 @@ func (h *Handler) TodoProtectedRoutes(e *echo.Group) {
 	e.POST("/todos", h.CreateTodo)
 	e.PUT("/todos/:id", h.UpdateTodo)
 	e.DELETE("/todos/:id", h.DeleteTodo)
+	e.PATCH("/todos/:id", h.PatchTodo)
 
 }

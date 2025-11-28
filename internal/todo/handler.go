@@ -203,7 +203,7 @@ func (h *Handler) UpdateTodo(e echo.Context) error {
 		ID:          uint(todoID),
 		Name:        todoPutRequest.Name,
 		Description: todoPutRequest.Description,
-		Completed:   todoPutRequest.Completed,
+		Completed:   *todoPutRequest.Completed,
 		UserID:      userID,
 	}
 

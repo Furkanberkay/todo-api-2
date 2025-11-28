@@ -89,7 +89,6 @@ func (r *Repository) UpdateTodo(ctx context.Context, todo *domain.Todo) error {
 		)
 		return domain.ErrInternal
 	}
-
 	if result.RowsAffected == 0 {
 		return domain.ErrTodoNotFound
 	}
