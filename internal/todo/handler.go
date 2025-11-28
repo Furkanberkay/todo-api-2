@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Furkanberkay/todo-api-2/internal/domain"
 	"github.com/Furkanberkay/todo-api-2/internal/dto"
 	"github.com/Furkanberkay/todo-api-2/internal/httpx"
 	"github.com/Furkanberkay/todo-api-2/internal/middleware"
@@ -129,21 +128,22 @@ func (h *Handler) CreateTodo(e echo.Context) error {
 		validationErrorResponse := httpx.ParseValidationErrors(err)
 		return e.JSON(http.StatusBadRequest, validationErrorResponse)
 	}
-	todo := CreateTodoInput{
+	input := CreateTodoInput{
 		Name:        createTodoDTO.Name,
 		Description: createTodoDTO.Description,
+		UserID:      userID,
 	}
 
-	createdTodo, err := h.service.CreateTodo(e.Request().Context(), &todo, userID)
+	todo, err := h.service.CreateTodo(e.Request().Context(), &input)
 	if err != nil {
 		return httpx.HandleServiceError(e, err)
 	}
 	todoResp := dto.TodoDetailResponse{
-		ID:          createdTodo.ID,
-		Name:        createdTodo.Name,
-		Description: createdTodo.Description,
-		Completed:   createdTodo.Completed,
-		CreatedAt:   createdTodo.CreatedAt,
+		ID:          todo.ID,
+		Name:        todo.Name,
+		Description: todo.Description,
+		Completed:   todo.Completed,
+		CreatedAt:   todo.CreatedAt,
 	}
 
 	return e.JSON(http.StatusCreated, todoResp)
@@ -151,25 +151,44 @@ func (h *Handler) CreateTodo(e echo.Context) error {
 }
 
 func (h *Handler) DeleteTodo(e echo.Context) error {
+
+	userID, middlewareErr := middleware.GetUserID(e)
+
+	if middlewareErr != nil {
+		h.logger.Error(middlewareErr.Error())
+		return e.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "UnAuthorize",
+		})
+	}
 	idStr := e.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return httpx.IdMapError(e, err)
 	}
-	if err := h.service.DeleteTodo(e.Request().Context(), id); err != nil {
+	if err := h.service.DeleteTodo(e.Request().Context(), id, userID); err != nil {
 		return httpx.HandleServiceError(e, err)
 	}
 	return e.NoContent(http.StatusNoContent)
 }
 
 func (h *Handler) UpdateTodo(e echo.Context) error {
-	todoPutRequest := dto.TodoPutRequest{}
+
+	userID, middlewareErr := middleware.GetUserID(e)
+
+	if middlewareErr != nil {
+		h.logger.Error(middlewareErr.Error())
+		return e.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "UnAuthorize",
+		})
+	}
 
 	idStr := e.Param("id")
-	id, err := strconv.Atoi(idStr)
+	todoID, err := strconv.Atoi(idStr)
 	if err != nil {
 		return httpx.IdMapError(e, err)
 	}
+
+	todoPutRequest := dto.TodoPutRequest{}
 
 	if err := e.Bind(&todoPutRequest); err != nil {
 		return httpx.InvalidBodyErr(e, err)
@@ -180,16 +199,18 @@ func (h *Handler) UpdateTodo(e echo.Context) error {
 		return e.JSON(http.StatusBadRequest, validationErrResponse)
 	}
 
-	todo := domain.Todo{}
+	input := UpdateTodoInput{
+		ID:          uint(todoID),
+		Name:        todoPutRequest.Name,
+		Description: todoPutRequest.Description,
+		Completed:   todoPutRequest.Completed,
+		UserID:      userID,
+	}
 
-	todo.ID = uint(id)
-	todo.Name = todoPutRequest.Name
-	todo.Description = todoPutRequest.Description
-	todo.Completed = todoPutRequest.Completed
+	todo, serviceErr := h.service.UpdateTodo(e.Request().Context(), &input)
 
-	if err := h.service.UpdateTodo(e.Request().Context(), &todo); err != nil {
+	if serviceErr != nil {
 		return httpx.HandleServiceError(e, err)
-
 	}
 
 	todoResponse := dto.TodoDetailResponse{
@@ -197,7 +218,7 @@ func (h *Handler) UpdateTodo(e echo.Context) error {
 		Name:        todo.Name,
 		Description: todo.Description,
 		Completed:   todo.Completed,
-		UpdatedAt:   todo.UpdatedAt,
+		CreatedAt:   todo.CreatedAt,
 	}
 
 	return e.JSON(http.StatusOK, todoResponse)

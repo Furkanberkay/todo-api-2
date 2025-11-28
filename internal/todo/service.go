@@ -29,9 +29,9 @@ func (s *Service) GetTodoByID(ctx context.Context, id int, userID uint) (*domain
 	return s.repo.GetTodoByID(ctx, id, userID)
 }
 
-func (s *Service) CreateTodo(ctx context.Context, todoInput *CreateTodoInput, userID uint) (*domain.Todo, error) {
+func (s *Service) CreateTodo(ctx context.Context, todoInput *CreateTodoInput) (*domain.Todo, error) {
 
-	todo := todoInput.ToModel(userID)
+	todo := todoInput.ToModel()
 
 	if err := s.repo.CreateTodo(ctx, todo); err != nil {
 		return nil, err
@@ -40,12 +40,16 @@ func (s *Service) CreateTodo(ctx context.Context, todoInput *CreateTodoInput, us
 	return todo, nil
 }
 
-func (s *Service) UpdateTodo(ctx context.Context, todo *domain.Todo) error {
-	return s.repo.UpdateTodo(ctx, todo)
+func (s *Service) UpdateTodo(ctx context.Context, input *UpdateTodoInput) (*domain.Todo, error) {
+	todo := input.ToModel()
+	if err := s.repo.UpdateTodo(ctx, todo); err != nil {
+		return nil, err
+	}
+	return todo, nil
 }
 
-func (s *Service) DeleteTodo(ctx context.Context, id int) error {
-	return s.repo.DeleteTodo(ctx, id)
+func (s *Service) DeleteTodo(ctx context.Context, id int, userID uint) error {
+	return s.repo.DeleteTodo(ctx, id, userID)
 }
 
 func (s *Service) PatchTodo(ctx context.Context, patchTodo PatchTodoInput, userID uint) (*domain.Todo, error) {

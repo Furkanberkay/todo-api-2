@@ -79,7 +79,7 @@ func (r *Repository) CreateTodo(ctx context.Context, todo *domain.Todo) error {
 }
 
 func (r *Repository) UpdateTodo(ctx context.Context, todo *domain.Todo) error {
-	result := r.Db.WithContext(ctx).Model(&domain.Todo{}).Where("id = ?", todo.ID).Updates(todo)
+	result := r.Db.WithContext(ctx).Model(&domain.Todo{}).Where("id = ? AND user_id=?", todo.ID, todo.UserID).Updates(todo)
 
 	if result.Error != nil {
 		r.logger.Error("database error during todo update",
@@ -97,8 +97,8 @@ func (r *Repository) UpdateTodo(ctx context.Context, todo *domain.Todo) error {
 	return nil
 }
 
-func (r *Repository) DeleteTodo(ctx context.Context, id int) error {
-	result := r.Db.WithContext(ctx).Where("id = ?", id).Delete(&domain.Todo{})
+func (r *Repository) DeleteTodo(ctx context.Context, id int, userID uint) error {
+	result := r.Db.WithContext(ctx).Where("id = ? AND user_id=?", id, userID).Delete(&domain.Todo{})
 
 	if result.Error != nil {
 		r.logger.Error("database error during todo deletion",
