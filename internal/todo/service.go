@@ -16,21 +16,22 @@ func NewService(repo domain.TodoRepository) *Service {
 	}
 }
 
-func (s *Service) GetTodos(ctx context.Context, page int, limit int) ([]domain.Todo, int, error) {
-	todos, totalCount, err := s.repo.GetTodos(ctx, page, limit)
+func (s *Service) GetTodos(ctx context.Context, page int, limit int, id uint) ([]domain.Todo, int, error) {
+
+	todos, totalCount, err := s.repo.GetTodos(ctx, page, limit, id)
 	if err != nil {
 		return nil, 0, err
 	}
 	return todos, totalCount, nil
 }
 
-func (s *Service) GetTodoByID(ctx context.Context, id int) (*domain.Todo, error) {
-	return s.repo.GetTodoByID(ctx, id)
+func (s *Service) GetTodoByID(ctx context.Context, id int, userID uint) (*domain.Todo, error) {
+	return s.repo.GetTodoByID(ctx, id, userID)
 }
 
-func (s *Service) CreateTodo(ctx context.Context, todoInput *CreateTodoInput) (*domain.Todo, error) {
+func (s *Service) CreateTodo(ctx context.Context, todoInput *CreateTodoInput, userID uint) (*domain.Todo, error) {
 
-	todo := todoInput.ToModel()
+	todo := todoInput.ToModel(userID)
 
 	if err := s.repo.CreateTodo(ctx, todo); err != nil {
 		return nil, err
@@ -47,12 +48,12 @@ func (s *Service) DeleteTodo(ctx context.Context, id int) error {
 	return s.repo.DeleteTodo(ctx, id)
 }
 
-func (s *Service) PatchTodo(ctx context.Context, patchTodo PatchTodoInput) (*domain.Todo, error) {
+func (s *Service) PatchTodo(ctx context.Context, patchTodo PatchTodoInput, userID uint) (*domain.Todo, error) {
 
 	if patchTodo.Name == nil && patchTodo.Description == nil && patchTodo.Completed == nil {
 		return nil, domain.ErrValidation
 	}
-	todo, err := s.GetTodoByID(ctx, patchTodo.ID)
+	todo, err := s.GetTodoByID(ctx, patchTodo.ID, userID)
 	if err != nil {
 		return nil, err
 	}

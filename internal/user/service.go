@@ -65,7 +65,7 @@ func (s *Service) LoginUser(ctx context.Context, loginInput *LoginInput) (string
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
 		"email":   user.Email,
-		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+		"exp":     time.Now().Add(time.Minute * 1).Unix(),
 	})
 
 	secretKey := s.config.SecretKey

@@ -18,13 +18,13 @@ func NewRepository(db *gorm.DB, logger *slog.Logger) domain.TodoRepository {
 	return &Repository{Db: db, logger: logger}
 }
 
-func (r *Repository) GetTodos(ctx context.Context, page int, limit int) ([]domain.Todo, int, error) {
+func (r *Repository) GetTodos(ctx context.Context, page int, limit int, id uint) ([]domain.Todo, int, error) {
 	var todos []domain.Todo
 	var totalCount int64
 
 	offset := (page - 1) * limit
 
-	if err := r.Db.WithContext(ctx).Model(&domain.Todo{}).Count(&totalCount).Error; err != nil {
+	if err := r.Db.WithContext(ctx).Model(&domain.Todo{}).Where("user_id = ? ", id).Count(&totalCount).Error; err != nil {
 		r.logger.Error("database error during todo count",
 			slog.String("component", "TodoRepository"),
 			slog.String("error", err.Error()),
@@ -32,7 +32,7 @@ func (r *Repository) GetTodos(ctx context.Context, page int, limit int) ([]domai
 		return nil, 0, domain.ErrInternal
 	}
 
-	result := r.Db.WithContext(ctx).Offset(offset).Limit(limit).Find(&todos)
+	result := r.Db.WithContext(ctx).Where("user_id=?", id).Offset(offset).Limit(limit).Find(&todos)
 
 	if result.Error != nil {
 		r.logger.Error("database error during todo list fetch",
@@ -45,9 +45,9 @@ func (r *Repository) GetTodos(ctx context.Context, page int, limit int) ([]domai
 	return todos, int(totalCount), nil
 }
 
-func (r *Repository) GetTodoByID(ctx context.Context, id int) (*domain.Todo, error) {
+func (r *Repository) GetTodoByID(ctx context.Context, id int, userID uint) (*domain.Todo, error) {
 	todo := new(domain.Todo)
-	result := r.Db.WithContext(ctx).First(todo, id)
+	result := r.Db.Model(domain.Todo{}).WithContext(ctx).Where("user_id=? AND id=?", userID, id).First(todo)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {

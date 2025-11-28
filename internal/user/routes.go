@@ -9,5 +9,4 @@ func (h *Handler) UserPublicRoutes(e *echo.Group) {
 }
 
 func (h *Handler) UserProtectedRoutes(e *echo.Group) {
-	e.POST("register", h.RegisterUser)
 }

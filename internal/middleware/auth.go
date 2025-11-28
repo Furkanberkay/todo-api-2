@@ -3,9 +3,10 @@ package middleware
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -13,11 +14,16 @@ import (
 const contextKey = "user"
 const ClaimUserIDKey = "user_id"
 
-func NewAuthMiddleware(secretKey string) echo.MiddlewareFunc {
+func NewAuthMiddleware(secretKey string, logger *slog.Logger) echo.MiddlewareFunc {
 	config := echojwt.Config{
 		SigningKey: []byte(secretKey),
 		ContextKey: contextKey,
 		ErrorHandler: func(c echo.Context, err error) error {
+
+			logger.Warn("authentication failed",
+				slog.String("error", err.Error()),
+				slog.String("ip", c.RealIP()),
+			)
 			return c.JSON(http.StatusUnauthorized, map[string]string{
 				"error": "unauthorized access",
 			})

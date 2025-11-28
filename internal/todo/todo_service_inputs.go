@@ -14,10 +14,11 @@ type PatchTodoInput struct {
 	Completed   *bool
 }
 
-func (s *CreateTodoInput) ToModel() *domain.Todo {
+func (s *CreateTodoInput) ToModel(userID uint) *domain.Todo {
 	return &domain.Todo{
 		Name:        s.Name,
 		Description: s.Description,
 		Completed:   false,
+		UserID:      userID,
 	}
 }

@@ -33,13 +33,13 @@ func main() {
 	userService := user.NewUserService(userRepo, cfg)
 
 	userHandler := user.NewHandler(userService, v)
-	todoHandler := todo.NewHandler(todoService, v)
+	todoHandler := todo.NewHandler(todoService, v, slogLogger)
 
 	e := echo.New()
 	e.Use(echomw.Recover())
 	e.Use(echomw.Logger())
 
-	authMiddleware := middleware.NewAuthMiddleware(cfg.SecretKey)
+	authMiddleware := middleware.NewAuthMiddleware(cfg.SecretKey, slogLogger)
 
 	api := e.Group("/api/v1", authMiddleware)
 	public := e.Group("")
