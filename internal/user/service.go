@@ -2,12 +2,11 @@ package user
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/Furkanberkay/todo-api-2/config"
 	"github.com/Furkanberkay/todo-api-2/internal/domain"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -55,26 +54,27 @@ func (s *Service) LoginUser(ctx context.Context, loginInput *LoginInput) (string
 	user, err := s.repo.GetUserByEmail(ctx, loginInput.Email)
 
 	if err != nil {
-		return "", errors.New("email or password is incorrect")
+
+		return "", domain.ErrIncorrectEmailOrPassword
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(loginInput.Password)); err != nil {
-		return "", errors.New("email or password is incorrect")
+		return "", domain.ErrIncorrectEmailOrPassword
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
 		"email":   user.Email,
-		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+		"exp":     time.Now().Add(time.Minute * 60).Unix(),
 	})
 
 	secretKey := s.config.SecretKey
 	if secretKey == "" {
-		return "", errors.New("internal error")
+		return "", domain.ErrInternal
 	}
 
-	tokenString, err := token.SignedString([]byte(secretKey))
-	if err != nil {
+	tokenString, signedErr := token.SignedString([]byte(secretKey))
+	if signedErr != nil {
 		return "", domain.ErrInternal
 	}
 	return tokenString, nil

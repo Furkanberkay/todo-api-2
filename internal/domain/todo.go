@@ -13,6 +13,7 @@ type Todo struct {
 	Description string `gorm:"not null,size:500"`
 	Completed   bool   `gorm:"default:false"`
 	UserID      uint   `gorm:"not null"`
+	User        User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (Todo) TableName() string {
@@ -20,11 +21,11 @@ func (Todo) TableName() string {
 }
 
 type TodoRepository interface {
-	GetTodos(ctx context.Context, page int, limit int) ([]Todo, int, error)
-	GetTodoByID(ctx context.Context, id int) (*Todo, error)
+	GetTodos(ctx context.Context, page int, limit int, id uint) ([]Todo, int, error)
+	GetTodoByID(ctx context.Context, id int, userID uint) (*Todo, error)
 	CreateTodo(ctx context.Context, todo *Todo) error
 	UpdateTodo(ctx context.Context, todo *Todo) error
-	DeleteTodo(ctx context.Context, id int) error
+	DeleteTodo(ctx context.Context, id int, userid uint) error
 }
 
 var ErrTodoNotFound = errors.New("todo not found")

@@ -45,3 +45,33 @@ func (h *Handler) RegisterUser(e echo.Context) error {
 	return e.JSON(http.StatusCreated, userResponse)
 
 }
+
+func (h *Handler) LoginUser(e echo.Context) error {
+	userLoginDto := new(dto.UserLoginDto)
+
+	if err := e.Bind(userLoginDto); err != nil {
+		return httpx.InvalidBodyErr(e, err)
+	}
+
+	if err := h.validator.Struct(userLoginDto); err != nil {
+		parseValidateErr := httpx.ParseValidationErrors(err)
+		return e.JSON(http.StatusBadRequest, parseValidateErr)
+	}
+
+	loginInput := LoginInput{
+		Email:    userLoginDto.Email,
+		Password: userLoginDto.Password,
+	}
+
+	token, err := h.service.LoginUser(e.Request().Context(), &loginInput)
+
+	if err != nil {
+		return httpx.HandleServiceError(e, err)
+	}
+
+	resp := dto.LoginResponse{
+		Token: token,
+	}
+
+	return e.JSON(http.StatusOK, resp)
+}

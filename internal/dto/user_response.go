@@ -7,3 +7,7 @@ type RegisterResponse struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
 }
+
+type LoginResponse struct {
+	Token string `json:"token"`
+}
