@@ -252,24 +252,18 @@ func (h *Handler) PatchTodo(e echo.Context) error {
 		return e.JSON(http.StatusBadRequest, validateErr)
 	}
 
-	todo, domainTodoErr := h.service.GetTodoByID(e.Request().Context(), id, userID)
-
-	if domainTodoErr != nil {
-		return httpx.HandleServiceError(e, domainTodoErr)
+	input := PatchTodoInput{
+		ID:          id,
+		UserID:      userID,
+		Name:        patchTodo.Name,
+		Description: patchTodo.Description,
+		Completed:   patchTodo.Completed,
 	}
 
-	if patchTodo.Name != nil {
-		todo.Name = *patchTodo.Name
-	}
-	if patchTodo.Description != nil {
-		todo.Description = *patchTodo.Description
-	}
-	if patchTodo.Completed != nil {
-		todo.Completed = *patchTodo.Completed
-	}
+	todo, responseErr := h.service.PatchTodo(e.Request().Context(), &input)
 
-	if err := h.service.UpdateTodo(e.Request().Context(), todo); err != nil {
-		return httpx.HandleServiceError(e, err)
+	if responseErr != nil {
+		return httpx.HandleServiceError(e, responseErr)
 	}
 
 	todoDetailResp := dto.TodoDetailResponse{

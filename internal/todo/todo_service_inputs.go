@@ -24,6 +24,7 @@ type PatchTodoInput struct {
 	Name        *string
 	Description *string
 	Completed   *bool
+	UserID      uint
 }
 
 func (s *CreateTodoInput) ToModel() *domain.Todo {

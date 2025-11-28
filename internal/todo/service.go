@@ -41,6 +41,7 @@ func (s *Service) CreateTodo(ctx context.Context, todoInput *CreateTodoInput) (*
 }
 
 func (s *Service) UpdateTodo(ctx context.Context, input *UpdateTodoInput) (*domain.Todo, error) {
+
 	todo := input.ToModel()
 	if err := s.repo.UpdateTodo(ctx, todo); err != nil {
 		return nil, err
@@ -52,12 +53,12 @@ func (s *Service) DeleteTodo(ctx context.Context, id int, userID uint) error {
 	return s.repo.DeleteTodo(ctx, id, userID)
 }
 
-func (s *Service) PatchTodo(ctx context.Context, patchTodo PatchTodoInput, userID uint) (*domain.Todo, error) {
+func (s *Service) PatchTodo(ctx context.Context, patchTodo *PatchTodoInput) (*domain.Todo, error) {
 
 	if patchTodo.Name == nil && patchTodo.Description == nil && patchTodo.Completed == nil {
 		return nil, domain.ErrValidation
 	}
-	todo, err := s.GetTodoByID(ctx, patchTodo.ID, userID)
+	todo, err := s.GetTodoByID(ctx, patchTodo.ID, patchTodo.UserID)
 	if err != nil {
 		return nil, err
 	}
